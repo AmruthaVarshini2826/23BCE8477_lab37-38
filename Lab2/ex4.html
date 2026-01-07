@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>User Management System</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+padding: 20px;
+}
+form {
+max-width: 400px;
+margin-bottom: 20px;
+}
+input, button {
+width: 100%;
+padding: 8px;
+margin: 6px 0;
+}
+table {
+width: 100%;
+border-collapse: collapse;
+margin-top: 20px;
+}
+th, td {
+border: 1px solid #ccc;
+padding: 8px;
+text-align: center;
+}
+th {
+background-color: #f2f2f2;
+}
+.error {
+color: red;
+font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<h2>User Registration</h2>
+
+<form onsubmit="registerUser(event)">
+<input type="text" id="name" placeholder="Name">
+<input type="email" id="email" placeholder="Email">
+<input type="text" id="mobile" placeholder="Mobile Number">
+<input type="password" id="password" placeholder="Password">
+<button type="submit">Register</button>
+<div class="error" id="errorMsg"></div>
+</form>
+
+<button onclick="clearAllUsers()">Clear All Users</button>
+
+<h2>Registered Users</h2>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Email</th>
+<th>Mobile</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="userTable"></tbody>
+</table>
+
+<script>
+function getUsers() {
+return JSON.parse(localStorage.getItem("users")) || [];
+}
+
+function saveUsers(users) {
+localStorage.setItem("users", JSON.stringify(users));
+}
+
+function registerUser(e) {
+e.preventDefault();
+
+let name = document.getElementById("name").value.trim();
+let email = document.getElementById("email").value.trim();
+let mobile = document.getElementById("mobile").value.trim();
+let password = document.getElementById("password").value;
+let error = document.getElementById("errorMsg");
+
+if (!name || !email || !mobile || !password) {
+error.innerText = "All fields are mandatory";
+return;
+}
+
+if (!/^\d{10}$/.test(mobile)) {
+error.innerText = "Mobile number must be 10 digits";
+return;
+}
+
+if (password.length < 6) {
+error.innerText = "Password must be at least 6 characters";
+return;
+}
+
+let users = getUsers();
+if (users.some(u => u.email === email)) {
+error.innerText = "Email already registered";
+return;
+}
+
+users.push({ name, email, mobile, password });
+saveUsers(users);
+
+error.innerText = "";
+document.querySelector("form").reset();
+displayUsers();
+}
+
+function displayUsers() {
+let users = getUsers();
+let table = document.getElementById("userTable");
+table.innerHTML = "";
+
+users.forEach((user, index) => {
+let row = document.createElement("tr");
+row.innerHTML =
+"<td>" + user.name + "</td>" +
+"<td>" + user.email + "</td>" +
+"<td>" + user.mobile + "</td>" +
+"<td><button onclick='deleteUser(" + index + ")'>Delete</button></td>";
+table.appendChild(row);
+});
+}
+
+function deleteUser(index) {
+let users = getUsers();
+users.splice(index, 1);
+saveUsers(users);
+displayUsers();
+}
+
+function clearAllUsers() {
+localStorage.removeItem("users");
+displayUsers();
+}
+
+displayUsers();
+</script>
+
+</body>
+</html>

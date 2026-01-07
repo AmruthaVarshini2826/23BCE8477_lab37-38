@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Drag and Drop Task Manager</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+padding: 20px;
+}
+input, button {
+padding: 8px;
+font-size: 14px;
+}
+.board {
+display: flex;
+gap: 20px;
+margin-top: 20px;
+}
+.column {
+width: 30%;
+min-height: 300px;
+border: 2px solid #ccc;
+padding: 10px;
+border-radius: 6px;
+}
+.column h3 {
+text-align: center;
+}
+.task {
+padding: 10px;
+margin: 10px 0;
+background-color: #f0f0f0;
+border-radius: 4px;
+cursor: grab;
+}
+.completed {
+background-color: #b6f5b6;
+}
+#message {
+margin-top: 15px;
+color: green;
+font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<h2>Advanced Drag and Drop Task Manager</h2>
+
+<input type="text" id="taskInput" placeholder="Enter task name">
+<button onclick="addTask()">Add Task</button>
+
+<div class="board">
+<div class="column" id="todo" ondragover="allowDrop(event)" ondrop="drop(event)">
+<h3>To Do</h3>
+</div>
+
+<div class="column" id="progress" ondragover="allowDrop(event)" ondrop="drop(event)">
+<h3>In Progress</h3>
+</div>
+
+<div class="column" id="completed" ondragover="allowDrop(event)" ondrop="drop(event)">
+<h3>Completed</h3>
+</div>
+</div>
+
+<div id="message"></div>
+
+<script>
+let taskId = 0;
+
+function addTask() {
+let taskName = document.getElementById("taskInput").value;
+if (taskName === "") return;
+
+let task = document.createElement("div");
+task.className = "task";
+task.draggable = true;
+task.id = "task" + taskId++;
+task.ondragstart = drag;
+
+let date = new Date().toLocaleDateString();
+task.innerHTML = taskName + "<br><small>" + date + "</small>";
+
+document.getElementById("todo").appendChild(task);
+document.getElementById("taskInput").value = "";
+}
+
+function allowDrop(ev) {
+ev.preventDefault();
+}
+
+function drag(ev) {
+ev.dataTransfer.setData("text", ev.target.id);
+}
+
+function drop(ev) {
+ev.preventDefault();
+let data = ev.dataTransfer.getData("text");
+let task = document.getElementById(data);
+ev.target.appendChild(task);
+
+if (ev.target.id === "completed") {
+task.classList.add("completed");
+document.getElementById("message").innerText = "Task Completed Successfully";
+}
+}
+</script>
+
+</body>
+</html>
