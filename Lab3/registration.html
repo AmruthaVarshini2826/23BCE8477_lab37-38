@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration form</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding: 20px; background: #f4f4f9; }
+        form { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .field { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .error-msg { color: #d9534f; font-size: 0.8rem; margin-top: 4px; display: none; }
+        .invalid { border-color: #d9534f; background-color: #fff6f6; }
+        .hidden { display: none; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+<form id="registrationForm" novalidate>
+    <div class="field">
+        <label>Role</label>
+        <select id="role" required>
+            <option value="Student">Student</option>
+            <option value="Teacher">Teacher</option>
+            <option value="Admin">Admin</option>
+        </select>
+    </div>
+    <div class="field">
+        <label>Name</label>
+        <input type="text" id="name" required>
+        <div class="error-msg" id="nameError">Name is required</div>
+    </div>
+    <div class="field">
+        <label>Email</label>
+        <input type="email" id="email" required>
+        <div class="error-msg" id="emailError">Enter a valid email (e.g., .com, .edu)</div>
+    </div>
+    <div class="field">
+        <label>Password</label>
+        <input type="password" id="password" required>
+        <div class="error-msg" id="passwordError">Invalid password</div>
+    </div>
+    <div class="field">
+        <label>Confirm Password</label>
+        <input type="password" id="confirmPassword" required>
+        <div class="error-msg" id="confirmError">Passwords do not match</div>
+    </div>
+    <div class="field">
+        <label>Age</label>
+        <input type="number" id="age" required>
+        <div class="error-msg" id="ageError">Age must be 18+ for this role</div>
+    </div>
+    <div id="skillsSection" class="field">
+        <label>Skills (Comma separated)</label>
+        <input type="text" id="skills">
+    </div>
+    <button type="submit" id="submitBtn">Register</button>
+</form>
+<script>
+    const form = document.getElementById('registrationForm');
+    const roleSelect = document.getElementById('role');
+    const skillsSection = document.getElementById('skillsSection');
+
+    const validators = {
+        email: (val) => /^[^\s@]+@[^\s@]+\.(com|edu|org|net)$/.test(val),
+        password: (val, role) => {
+            if (role === 'Admin') return val.length >= 12 && /[A-Z]/.test(val) && /[0-9]/.test(val);
+            return val.length >= 6;
+        },
+        age: (val, role) => {
+            const age = parseInt(val);
+            if (role === 'Admin') return age >= 25;
+            if (role === 'Teacher') return age >= 21;
+            return age >= 16;
+        }
+    };
+    function toggleFields() {
+        if (roleSelect.value === 'Admin') {
+            skillsSection.classList.add('hidden');
+        } else {
+            skillsSection.classList.remove('hidden');
+        }
+        validateForm();
+    }
+    function showError(input, errorId, isValid) {
+        const errorEl = document.getElementById(errorId);
+        if (isValid) {
+            input.classList.remove('invalid');
+            errorEl.style.display = 'none';
+        } else {
+            input.classList.add('invalid');
+            errorEl.style.display = 'block';
+        }
+    }
+    function validateForm() {
+        const role = roleSelect.value;
+        const name = document.getElementById('name');
+        const email = document.getElementById('email');
+        const pass = document.getElementById('password');
+        const confirm = document.getElementById('confirmPassword');
+        const age = document.getElementById('age');
+
+        const isNameValid = name.value.trim().length > 0;
+        const isEmailValid = validators.email(email.value);
+        const isPassValid = validators.password(pass.value, role);
+        const isConfirmValid = pass.value === confirm.value && confirm.value !== '';
+        const isAgeValid = validators.age(age.value, role);
+
+        showError(name, 'nameError', isNameValid);
+        showError(email, 'emailError', isEmailValid);
+        showError(pass, 'passwordError', isPassValid);
+        showError(confirm, 'confirmError', isConfirmValid);
+        showError(age, 'ageError', isAgeValid);
+
+        const passwordMsg = document.getElementById('passwordError');
+        passwordMsg.textContent = role === 'Admin' ? 
+            'Admin: Min 12 chars, 1 uppercase, 1 number' : 'Min 6 characters';
+
+        const isValid = isNameValid && isEmailValid && isPassValid && isConfirmValid && isAgeValid;
+        document.getElementById('submitBtn').disabled = !isValid;
+        return isValid;
+    }
+    roleSelect.addEventListener('change', toggleFields);
+    form.addEventListener('input', validateForm);
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (validateForm()) {
+            alert('Registration Successful!');
+        }
+    });
+</script>
+</body>
+</html> 
