@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather Dashboard</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding-top: 50px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        .search-box { display: flex; gap: 8px; margin-bottom: 20px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; outline: none; }
+        button { padding: 10px 20px; background: #5d8ad8; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        #loader { display: none; margin: 20px auto; border: 4px solid #f3f3f3; border-top: 4px solid #5d8ad8; border-radius: 50%; width: 25px; height: 25px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .weather-info { display: none; }
+        .temp { font-size: 2.5rem; margin: 10px 0; color: #333; font-weight: bold; }
+        .desc { text-transform: capitalize; color: #777; margin-bottom: 15px; }
+        .error { color: #cc4444; margin-top: 15px; font-size: 0.9rem; display: none; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>Weather Dash</h2>
+    <div class="search-box">
+        <input type="text" id="cityInput" placeholder="Enter city name...">
+        <button onclick="getWeather()">Search</button>
+    </div>
+    <div id="loader"></div>
+    <div id="errorMsg" class="error"></div>
+    <div id="weatherDisplay" class="weather-info">
+        <h3 id="cityName"></h3>
+        <div class="temp" id="tempDisplay"></div>
+        <div class="desc" id="conditionDisplay"></div>
+        <div id="humidityDisplay"></div>
+    </div>
+</div>
+<script>
+    let lastResultCache = null;
+    async function getWeather() {
+        const city = document.getElementById('cityInput').value.trim();
+        const loader = document.getElementById('loader');
+        const display = document.getElementById('weatherDisplay');
+        const errorMsg = document.getElementById('errorMsg');
+        if (!city) return;
+        errorMsg.style.display = 'none';
+        display.style.display = 'none';
+        loader.style.display = 'block';
+        try {
+            await new Promise(resolve => setTimeout(resolve, 800));
+            if (city.toLowerCase() === "unknown") {
+                throw new Error("City not found");
+            }
+            const mockData = {
+                name: city.charAt(0).toUpperCase() + city.slice(1),
+                main: { 
+                    temp: Math.floor(Math.random() * (35 - 15) + 15), 
+                    humidity: 60 
+                },
+                weather: [{ description: "clear sky" }]
+            };
+            lastResultCache = mockData;
+            loader.style.display = 'none';
+            display.style.display = 'block';
+            document.getElementById('cityName').textContent = mockData.name;
+            document.getElementById('tempDisplay').textContent = `${mockData.main.temp}°C`;
+            document.getElementById('conditionDisplay').textContent = mockData.weather[0].description;
+            document.getElementById('humidityDisplay').textContent = `Humidity: ${mockData.main.humidity}%`;
+        } catch (err) {
+            loader.style.display = 'none';
+            errorMsg.textContent = err.message;
+            errorMsg.style.display = 'block';
+        }
+    }
+</script>
+</body>
+</html>

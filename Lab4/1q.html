@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Username Checker</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            padding-top: 100px;
+            background-color: #f4f4f4;
+        }
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 320px;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1.5px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            outline: none;
+        }
+        #feedback {
+            font-size: 0.8rem;
+            margin-top: 8px;
+            font-weight: bold;
+            min-height: 1rem;
+        }
+        .error { color: #e74c3c; }
+        .success { color: #2ecc71; }
+        .loading { color: #3498db; }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <form id="regForm">
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="username" placeholder="Enter username" autocomplete="off">
+            <div id="feedback"></div>
+        </div>
+        <button type="submit" id="submitBtn" disabled>Register</button>
+    </form>
+</div>
+<script>
+    const usernameInput = document.getElementById('username');
+    const feedback = document.getElementById('feedback');
+    const submitBtn = document.getElementById('submitBtn');
+    const regForm = document.getElementById('regForm');
+    let timeout = null;
+    let isValid = false;
+    usernameInput.addEventListener('input', () => {
+        const val = usernameInput.value.trim();
+        clearTimeout(timeout);
+        feedback.textContent = "";
+        submitBtn.disabled = true;
+        isValid = false;
+        if (val.length === 0) return;
+        feedback.textContent = "Checking...";
+        feedback.className = "loading";
+        timeout = setTimeout(async () => {
+            try {
+                const res = await fetch('users.json');
+                const data = await res.json();
+                await new Promise(r => setTimeout(r, 500));
+                const taken = data.takenUsernames.some(u => u.toLowerCase() === val.toLowerCase());
+                if (taken) {
+                    feedback.textContent = "Username already taken";
+                    feedback.className = "error";
+                    isValid = false;
+                } else {
+                    feedback.textContent = "Username available";
+                    feedback.className = "success";
+                    isValid = true;
+                }
+                submitBtn.disabled = !isValid;
+            } catch (err) {
+                feedback.textContent = "Connection error";
+                feedback.className = "error";
+            }
+        }, 400);
+    });
+    regForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (isValid) {
+            alert("Success");
+            regForm.reset();
+            submitBtn.disabled = true;
+            feedback.textContent = "";
+        }
+    });
+</script>
+</body>
+</html>

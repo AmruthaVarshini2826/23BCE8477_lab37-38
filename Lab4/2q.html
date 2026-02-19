@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Product Search</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; display: flex; justify-content: center; padding: 40px; }
+        .search-container { width: 100%; max-width: 500px; }
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus { border-color: #007bff; }
+        #results { margin-top: 20px; }
+        .product-card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid #007bff;
+        }
+        .product-name { font-weight: bold; color: #333; display: block; }
+        .product-meta { font-size: 0.9rem; color: #666; margin-top: 5px; }
+        .status-msg { text-align: center; color: #888; margin-top: 20px; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+<div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search products by name, category, or price..." autocomplete="off">
+    <div id="results"></div>
+</div>
+<script>
+    const searchInput = document.getElementById('searchInput');
+    const resultsContainer = document.getElementById('results');
+    let debounceTimer;
+    searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase().trim();
+        clearTimeout(debounceTimer);
+        resultsContainer.innerHTML = '';
+        if (query === '') return;
+        resultsContainer.innerHTML = '<div class="status-msg">Searching...</div>';
+        debounceTimer = setTimeout(() => {
+            fetchProducts(query);
+        }, 300);
+    });
+    async function fetchProducts(query) {
+        try {
+            const response = await fetch('products.json');
+            if (!response.ok) throw new Error('Failed to fetch data');
+            const data = await response.json();
+            const filtered = data.products.filter(p => 
+                p.name.toLowerCase().includes(query) || 
+                p.category.toLowerCase().includes(query) ||
+                p.price.toString().includes(query)
+            );
+            displayResults(filtered);
+        } catch (error) {
+            resultsContainer.innerHTML = `<div class="status-msg error">Error loading results. Please try again.</div>`;
+        }
+    }
+    function displayResults(matches) {
+        resultsContainer.innerHTML = '';
+        if (matches.length === 0) {
+            resultsContainer.innerHTML = '<div class="status-msg">No results found.</div>';
+            return;
+        }
+        matches.forEach(product => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                <span class="product-name">${product.name}</span>
+                <div class="product-meta">
+                    Category: ${product.category} | <strong>$${product.price.toFixed(2)}</strong>
+                </div>
+            `;
+            resultsContainer.appendChild(card);
+        });
+    }
+</script>
+</body>
+</html>
