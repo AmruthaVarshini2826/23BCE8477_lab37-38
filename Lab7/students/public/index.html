@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Notes Manager</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial; margin: 40px; background: #f0f2f5; }
+        .container { max-width: 700px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-add { background: #007bff; color: white; width: 100%; margin-top: 10px; }
+        .note-card { background: #fff; border-left: 6px solid #007bff; padding: 15px; margin-top: 20px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
+        .note-date { font-size: 12px; color: #888; position: absolute; top: 15px; right: 15px; }
+        .subject-tag { display: inline-block; background: #e7f3ff; color: #007bff; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .actions { margin-top: 10px; display: flex; gap: 10px; }
+        .btn-edit { background: #ffc107; color: #000; }
+        .btn-delete { background: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Student Notes Manager</h2>
+    <input type="text" id="title" placeholder="Note Title">
+    <input type="text" id="subject" placeholder="Subject">
+    <textarea id="description" rows="3" placeholder="Description"></textarea>
+    <button class="btn-add" onclick="saveNote()">Add Note</button>
+
+    <h3 style="margin-top:40px; border-bottom: 2px solid #eee; padding-bottom: 10px;">All Notes</h3>
+    <div id="notesList"></div>
+</div>
+
+<script>
+    async function loadNotes() {
+        const res = await fetch('/notes');
+        const notes = await res.json();
+        const list = document.getElementById('notesList');
+        list.innerHTML = notes.map(n => `
+            <div class="note-card">
+                <span class="note-date">${n.created_date}</span>
+                <span class="subject-tag">${n.subject}</span>
+                <h3 style="margin: 10px 0 5px 0;">${n.title}</h3>
+                <p style="color: #555;">${n.description}</p>
+                <div class="actions">
+                    <button class="btn-edit" onclick="editNote('${n._id}', '${n.title}', '${n.description}')">Edit</button>
+                    <button class="btn-delete" onclick="deleteNote('${n._id}')">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function saveNote() {
+        const title = document.getElementById('title').value;
+        const subject = document.getElementById('subject').value;
+        const description = document.getElementById('description').value;
+
+        await fetch('/notes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, subject, description })
+        });
+        
+        clearInputs();
+        loadNotes();
+    }
+
+    async function editNote(id, oldTitle, oldDesc) {
+        const newTitle = prompt("Edit Title:", oldTitle);
+        const newDesc = prompt("Edit Description:", oldDesc);
+        if (newTitle && newDesc) {
+            await fetch(`/notes/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: newTitle, description: newDesc })
+            });
+            loadNotes();
+        }
+    }
+
+    async function deleteNote(id) {
+        if (confirm("Delete this note?")) {
+            await fetch(`/notes/${id}`, { method: 'DELETE' });
+            loadNotes();
+        }
+    }
+
+    function clearInputs() {
+        document.getElementById('title').value = '';
+        document.getElementById('subject').value = '';
+        document.getElementById('description').value = '';
+    }
+
+    loadNotes();
+</script>
+
+</body>
+</html>
