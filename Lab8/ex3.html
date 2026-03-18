@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Enrollment System</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f3f4f6;
+            --text: #1f2937;
+            --success: #059669;
+            --error: #dc2626;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+
+        .card { 
+            background: white; 
+            padding: 2.5rem; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); 
+            width: 360px; 
+            border-top: 6px solid var(--primary); 
+        }
+
+        h2 { 
+            margin: 0 0 1rem 0; 
+            color: var(--primary); 
+            font-size: 1.4rem; 
+            letter-spacing: -0.5px;
+        }
+
+        .info { 
+            margin-bottom: 20px; 
+            font-size: 0.95rem; 
+            color: var(--text); 
+            line-height: 1.5;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #6b7280;
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        .status { 
+            padding: 12px; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            text-align: center; 
+            margin-top: 20px; 
+            transition: all 0.3s ease;
+        }
+
+        .success { background-color: #ecfdf5; color: var(--success); border: 1px solid #10b981; }
+        .error { background-color: #fef2f2; color: var(--error); border: 1px solid #ef4444; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Enrollment Portal</h2>
+    <div id="course-info" class="info"></div>
+    <div id="enroll-msg" class="status"></div>
+</div>
+
+<script>
+    class Course {
+        constructor(courseName, instructor) {
+            this.courseName = courseName;
+            this.instructor = instructor;
+        }
+
+        displayCourse() {
+            document.getElementById('course-info').innerHTML = `
+                <span class="label">Course Name</span>
+                <div>${this.courseName}</div>
+                <span class="label">Primary Instructor</span>
+                <div>${this.instructor}</div>
+            `;
+        }
+    }
+
+    const course1 = new Course("Web Technologies", "Dr. S. Gopikrishnan");
+    course1.displayCourse();
+
+    const enrollCourse = new Promise((resolve, reject) => {
+        let seatsAvailable = true;
+        setTimeout(() => {
+            seatsAvailable ? resolve("Registration Successful") : reject("Course Capacity Reached");
+        }, 500);
+    });
+
+    const msgDiv = document.getElementById('enroll-msg');
+
+    enrollCourse
+        .then(msg => {
+            msgDiv.textContent = msg;
+            msgDiv.className = 'status success';
+        })
+        .catch(err => {
+            msgDiv.textContent = err;
+            msgDiv.className = 'status error';
+        });
+</script>
+
+</body>
+</html>
